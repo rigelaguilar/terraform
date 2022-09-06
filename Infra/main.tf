@@ -143,18 +143,3 @@ provisioner "remote-exec" {
     "sudo /tmp/nginx.sh"
   ]
 }
-
-# resource "aws_efs_mount_target" "this" {
-#   file_system_id  = aws_efs_file_system.this.id
-#   subnet_id       = aws_instance.this.subnet_id
-#   security_groups = [aws_security_group.this.id]
-# }
-# resource "null_resource" "configure_nfs" {
-#   depends_on = [aws_efs_mount_target.this]
-#   connection {
-#     type        = "ssh"
-#     user        = "ec2-user"
-#     private_key = tls_private_key.my_key.private_key_pem
-#     host        = aws_instance.web.public_ip
-#   }
-# }
