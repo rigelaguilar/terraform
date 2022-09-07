@@ -26,14 +26,13 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = [aws_security_group.this.id]
   subnet_id              = aws_subnet.this.id
   user_data = file("nginx.sh")
-
-  connection {
-    host = self.private_ip
-  }
-
   tags = {
     Name     = "ec2-trabalho-wr"
     Trabalho = "DevOps"
+  }
+
+  connection {
+    host = self.private_ip
   }
 
   # Copia o arquivo nginx.sh para a instancia EC2
