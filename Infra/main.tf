@@ -57,42 +57,6 @@ resource "aws_instance" "this" {
   }
 }
 
-# 1 VPC
-resource "aws_vpc" "this" {
-  cidr_block       = "10.0.0.0/16"
-  instance_tenancy = "default"
-  tags = {
-    Name     = "vpc-trabalho-wr"
-    Trabalho = "DevOps"
-  }
-}
-
-# 1 Subnet
-resource "aws_subnet" "this" {
-  vpc_id     = aws_vpc.this.id
-  cidr_block = "10.0.1.0/24"
-  tags = {
-    Name     = "subnet-trabalho-wr"
-    Trabalho = "DevOps"
-  }
-}
-
-# 1 Internet Gateway
-resource "aws_internet_gateway" "this" {
-  vpc_id = aws_vpc.this.id
-  tags = {
-    Name     = "gateway-trabalho-wr"
-    Trabalho = "DevOps"
-  }
-}
-
-# 1 Route
-resource "aws_route" "this" {
-  route_table_id            = "route-trabalho-wr-table-id"
-  destination_cidr_block    = "0.0.0.0/0"
-  vpc_peering_connection_id = "pcx-45ff3dc1"
-}
-
 # 1 EFS
 resource "aws_efs_file_system" "this" {
   creation_token = "efs-token-site-trabalho-wr"
@@ -102,9 +66,13 @@ resource "aws_efs_file_system" "this" {
   }
 }
 
+data "aws_availability_zones" "available_ebs" {
+  state = "available"
+}
+
 # 1 EBS Volume (1 GB)
 resource "aws_ebs_volume" "this" {
-  availability_zone = "us-east-1a"
+  availability_zone = data.aws_availability_zones.available_ebs.names[0]
   size = 1
   tags = {
     Name     = "ebs-trabalho-wr"
