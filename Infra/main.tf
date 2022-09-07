@@ -22,14 +22,38 @@ provider "aws" {
 resource "aws_instance" "this" {
   ami           = "ami-05fa00d4c63e32376"
   instance_type = "t2.micro"
-  count         = 1
   associate_public_ip_address = true
   vpc_security_group_ids = [aws_security_group.this.id]
   subnet_id              = aws_subnet.this.id
   user_data = file("nginx.sh")
+
+  connection {
+    host = self.private_ip
+  }
+
   tags = {
     Name     = "ec2-trabalho-wr"
     Trabalho = "DevOps"
+  }
+
+  # Copia o arquivo nginx.sh para a instancia EC2
+  provisioner "file" {
+    source      = "nginx.sh"
+    destination = "/tmp/nginx.sh"
+  }
+
+  # Copia o conteudo do site para o volume EBS
+  provisioner "file" {
+    source      = "/site"
+    destination = "/dev/sdh"
+  }
+
+  # Executa o arquivo nginx.sh
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/nginx.sh",
+      "sudo /tmp/nginx.sh"
+    ]
   }
 }
 
@@ -80,12 +104,18 @@ resource "aws_efs_file_system" "this" {
 
 # 1 EBS Volume (1 GB)
 resource "aws_ebs_volume" "this" {
-  availability_zone = "us-east-1"
+  availability_zone = "us-east-1a"
   size = 1
   tags = {
     Name     = "ebs-trabalho-wr"
     Trabalho = "DevOps"
   }
+}
+
+resource "aws_volume_attachment" "this" {
+  device_name = "/dev/sdh"
+  volume_id   = aws_ebs_volume.this.id
+  instance_id = aws_instance.this.id
 }
 
 # 1 Security Group
@@ -128,18 +158,4 @@ resource "aws_security_group" "this" {
     Name     = "security-group-trabalho-wr"
     Trabalho = "DevOps"
   }
-}
-
-# nginx installation
-# storing the nginx.sh file in the EC2 instnace
-provisioner "file" {
-  source      = "nginx.sh"
-  destination = "/tmp/nginx.sh"
-}
-# Executa o arquivo nginx.sh
-provisioner "remote-exec" {
-  inline = [
-    "chmod +x /tmp/nginx.sh",
-    "sudo /tmp/nginx.sh"
-  ]
 }
