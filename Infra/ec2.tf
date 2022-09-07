@@ -4,7 +4,7 @@ resource "aws_instance" "this" {
   associate_public_ip_address = true
   vpc_security_group_ids = [aws_security_group.this.id]
   subnet_id              = aws_subnet.this.id
-  user_data = file("nginx.sh")
+  user_data = file("../Scripts/nginx.sh")
   tags = {
     Name     = "ec2-trabalho-wr"
     Trabalho = "DevOps"
